@@ -22,7 +22,10 @@ if(Input::exists()){
         ],
         'password'       => [
             'required'  => true,
-            'min'       => 8
+            'min'       => 8,
+            'max'       => 20,
+            'req_letter' => 1,
+            'req_number'  => 1
             /*
              DZ - password mora iomati min 1 veloko slovo,
              min jedno malo slovo

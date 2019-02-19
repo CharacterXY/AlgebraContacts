@@ -46,9 +46,6 @@ class DB{
            
             if (!empty($params)) {
             
-                /* for ($i=0; $i < count($params); $i++) { 
-                    $this->query->bindValue($i+1, $params[$i]);
-                } */
                 $counter = 1;
                 foreach ($params as $key => $param) {
                     $this->query->bindValue($counter, $param);
@@ -61,62 +58,42 @@ class DB{
                 $this->count = $this->query->rowCount();
             }else{
                 $this->error = true;
+                if (Config::get('app')['display_errors']) {
+                    die($this->query->errorInfo()[2]);
+                }
+                
             }            
         }
         return $this;
     }
 
     private function action($action, $table, $where = array()){
-        if (count ($where) === 3) {
-            $operators = array('=','<','>','<=','>=');
-            $field = $where[0];
-            $operator = $where[1];
-            $value = $where[2];
-            if (in_array($operator,$operators)) {
-                $sql = "$action FROM $table WHERE $field $operator ?";
-                if (!$this->query($sql,array($value))->getError()) {
+        if (!empty($where)) {
+               
+            $array_chunks = array_chunk($where, 4);
+            $field_num = count($array_chunks);
+            $condition = '';
+            $i = 1;
+
+            foreach ($array_chunks as $chunks) {
+                $values[] = $chunks[2];
+                $condition .= $chunks[0]." ".$chunks[1]."?";
+                
+                if ($i < $field_num) {
+                    $condition .= $chunks[3]." ";
+                }
+                $i++;
+            }
+            $sql = "$action FROM $table WHERE $condition";
+  
+            if (!$this->query($sql,$values)->getError()) {
+                return $this;
+                }
+            }  else {
+                $sql = "$action FROM $table";
+
+                if  (!$this->query($sql)->getError()) {
                     return $this;
-                    }
-                }
-            }
-            
-        else if (((count($where) - 3) % 4 === 0)) {
-            $operators = array('=','<','>','<=','>=','!=');
-            $options = array('AND','OR');
-            foreach ($where as $key => $values) {
-                if ($key === 0 OR (($key % 4) === 0)) {
-                    $field[] = $values;
-                    }
-                else if ($key === 1 OR ((($key - 1) % 4) === 0)) {
-                    $operator[] = $values;
-                    }
-                else if ($key === 2 OR ((($key - 2) % 4) === 0)) {
-                    $valueles[] = $values;
-                    }
-                else if ($key === 3 OR ((($key - 3) % 4) === 0)) {
-                    $option[] = $values;
-                    }		
-                }
-            $sql = "$action FROM $table WHERE ";
-            foreach ($operator as $key => $value) {
-                if (in_array($value,$operators)) {
-                    if ($key < count($operator) - 1 AND in_array($option[$key],$options)) {
-                        $sql .= "$field[$key] $operator[$key] ? $option[$key] ";
-                        }
-                    else {
-                        $sql .= "$field[$key] $operator[$key] ?";
-                        }	
-                    }
-                }
-            if (!$this->query($sql,$valueles)->getError()) {
-                return $this;
-                }
-            }
-            
-        else {
-            $sql = "$action FROM $table";
-            if  (!$this->query($sql)->getError()) {
-                return $this;
                 }
             }	
         return false;

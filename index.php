@@ -25,17 +25,17 @@ Helper::getHeader('Algebra Contacts', 'main-header');
 
 <?php
 
-$db = DB::getInstance();
+//$db = DB::getInstance();
 
-$get = $db->get('*','users');
+//$get = $db->get('*','users' ['id', '=', 14, 'AND', 'id', '!=' , 3, 'OR' 'name', '!=', 'iva']);
 
 //$find = $db->find(5, 'users');
 //$delete = $db->delete('users', ['id', '=', 4]);
 
-$update = $db->update('users', 5,[
+/* $update = $db->update('users', 5,[
 	'username' 	=> 'markina',
 	'name' 		=> 'Ivan'
-]);
+]); */
 
 /* $insert = $db->insert('users',[
 	'name'		=> 'Iva',
@@ -44,11 +44,6 @@ $update = $db->update('users', 5,[
 	'salt'		=> '5468354',
 	'role_id'	=> '1'
 ]); */
-
-
-echo '<pre>';
-var_dump($update);
-
 
 Helper::getFooter();
 
